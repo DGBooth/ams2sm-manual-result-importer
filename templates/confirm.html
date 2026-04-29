@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}Result Written — AMS2 Importer{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="/">Store</a>
+  <span>/</span>
+  <a href="{{ url_for('select_championship') }}">Championships</a>
+  <span>/</span>
+  <a href="{{ url_for('select_event', champ_id=champ.ID) }}">{{ champ.Name }}</a>
+  <span>/</span>
+  Done
+</div>
+
+<div class="alert alert-success">
+  &#10003;&nbsp; Result written successfully. A timestamped backup was created before writing.
+</div>
+
+<div class="card">
+  <h2 style="margin-bottom:1rem;">Summary</h2>
+
+  <div style="display:grid; grid-template-columns: max-content 1fr; gap:0.4rem 1rem; font-size:0.88rem; align-items:baseline;">
+    <span style="color:#555;">Championship</span>
+    <span>{{ champ.Name }}</span>
+
+    <span style="color:#555;">Session</span>
+    <span>{{ session_name }}</span>
+
+    <span style="color:#555;">Race time</span>
+    <span class="monospace">{{ race_datetime }}</span>
+
+    <span style="color:#555;">File name</span>
+    <span class="monospace">{{ result.OriginalFileName }}</span>
+
+    <span style="color:#555;">Car</span>
+    <span>{{ result.Places[0].CarModel if result.Places else '—' }} ({{ result.Places[0].CarModelID if result.Places else '—' }})</span>
+
+    <span style="color:#555;">Track ID</span>
+    <span class="monospace">{{ result.TrackID or '—' }}</span>
+  </div>
+</div>
+
+<div class="card">
+  <h2 style="margin-bottom:0.75rem;">Finishing Order</h2>
+
+  <div class="finisher-list">
+    {% for f in finishers %}
+      <div class="finisher-item">
+        <span class="finisher-pos">{{ loop.index }}</span>
+        <div>
+          <div class="finisher-name">{{ f.name }}</div>
+          {% if f.guid %}
+            <div class="finisher-guid">{{ f.guid }}</div>
+          {% endif %}
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+
+<div class="warning-box">
+  &#9888;&nbsp; Remember to <strong>restart the AMS2 Server Manager</strong> for the changes to take effect.
+</div>
+
+<div class="actions">
+  <a href="{{ url_for('select_event', champ_id=champ.ID) }}" class="btn btn-secondary">&larr; Back to Events</a>
+  <a href="{{ url_for('select_championship') }}" class="btn btn-secondary">All Championships</a>
+</div>
+{% endblock %}

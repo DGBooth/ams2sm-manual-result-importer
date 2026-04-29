@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}Select Event — {{ champ.Name }} — AMS2 Importer{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="/">Store</a>
+  <span>/</span>
+  <a href="{{ url_for('select_championship') }}">Championships</a>
+  <span>/</span>
+  {{ champ.Name }}
+</div>
+
+<h2>Select Event</h2>
+
+{% if events %}
+  {% for event in events %}
+    <a href="{{ url_for('enter_finishers', champ_id=champ.ID, event_id=event.id) }}" style="text-decoration:none; display:block;">
+      <div class="list-item">
+        <div class="list-item-left">
+          <div class="list-item-name">Event {{ event.index }}</div>
+          <div class="list-item-meta">
+            Created: {{ event.created[:10] if event.created else 'unknown' }}
+            {% if not event.completed_is_zero %}
+              &nbsp;&middot;&nbsp; Completed: {{ event.completed[:10] }}
+            {% else %}
+              &nbsp;&middot;&nbsp; <span style="color:#d4a017;">Not completed</span>
+            {% endif %}
+          </div>
+          <div class="list-item-meta monospace">{{ event.id }}</div>
+        </div>
+        <div style="display:flex; align-items:center; gap:0.5rem; flex-shrink:0;">
+          {% if event.has_result %}
+            <span class="badge badge-yellow">Result exists</span>
+          {% else %}
+            <span class="badge badge-gray">No result</span>
+          {% endif %}
+          {% if event.race_count > 1 %}
+            <span class="badge badge-gray">{{ event.race_count }} races</span>
+          {% endif %}
+          <span style="color:#4a6fd9; font-size:1.2rem;">&rsaquo;</span>
+        </div>
+      </div>
+    </a>
+  {% endfor %}
+{% else %}
+  <div class="alert alert-info">This championship has no events.</div>
+{% endif %}
+
+<div class="actions">
+  <a href="{{ url_for('select_championship') }}" class="btn btn-secondary">&larr; Back</a>
+</div>
+{% endblock %}
