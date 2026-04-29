@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}AMS2 Manual Result Importer{% endblock %}</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      font-size: 15px;
+      background: #0f1117;
+      color: #e0e0e0;
+      min-height: 100vh;
+      padding: 2rem 1rem;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    header {
+      margin-bottom: 2rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid #2a2d3a;
+    }
+
+    header h1 {
+      font-size: 1.4rem;
+      color: #fff;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+    }
+
+    header p {
+      margin-top: 0.25rem;
+      font-size: 0.85rem;
+      color: #666;
+    }
+
+    .breadcrumb {
+      font-size: 0.82rem;
+      color: #555;
+      margin-bottom: 1.5rem;
+    }
+
+    .breadcrumb a { color: #6b8fd9; text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb span { margin: 0 0.4rem; }
+
+    h2 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 1rem;
+    }
+
+    .card {
+      background: #1a1d27;
+      border: 1px solid #2a2d3a;
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .card-sm {
+      padding: 1rem 1.25rem;
+    }
+
+    label {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: #aaa;
+      margin-bottom: 0.4rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    input[type="text"],
+    input[type="datetime-local"],
+    textarea,
+    select {
+      width: 100%;
+      background: #0f1117;
+      border: 1px solid #2a2d3a;
+      border-radius: 6px;
+      color: #e0e0e0;
+      font-size: 0.92rem;
+      font-family: inherit;
+      padding: 0.55rem 0.75rem;
+      transition: border-color 0.15s;
+      outline: none;
+    }
+
+    input[type="text"]:focus,
+    input[type="datetime-local"]:focus,
+    textarea:focus,
+    select:focus {
+      border-color: #4a6fd9;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 140px;
+      font-family: "SF Mono", "Consolas", monospace;
+      font-size: 0.88rem;
+      line-height: 1.6;
+    }
+
+    .field { margin-bottom: 1.25rem; }
+    .field:last-child { margin-bottom: 0; }
+
+    .field-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    .hint {
+      font-size: 0.78rem;
+      color: #555;
+      margin-top: 0.35rem;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 0.55rem 1.25rem;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      font-family: inherit;
+      transition: opacity 0.15s, background 0.15s;
+      text-decoration: none;
+    }
+
+    .btn-primary {
+      background: #4a6fd9;
+      color: #fff;
+    }
+
+    .btn-primary:hover { background: #3a5fc9; }
+
+    .btn-secondary {
+      background: #2a2d3a;
+      color: #bbb;
+    }
+
+    .btn-secondary:hover { background: #33374a; color: #e0e0e0; }
+
+    .btn-danger {
+      background: #7f2929;
+      color: #fff;
+    }
+
+    .list-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.85rem 1rem;
+      border: 1px solid #2a2d3a;
+      border-radius: 6px;
+      margin-bottom: 0.5rem;
+      background: #1a1d27;
+      transition: border-color 0.15s;
+    }
+
+    .list-item:hover { border-color: #4a6fd9; }
+
+    .list-item-left { flex: 1; min-width: 0; }
+    .list-item-name { font-weight: 500; color: #e0e0e0; }
+    .list-item-meta { font-size: 0.78rem; color: #555; margin-top: 0.15rem; }
+
+    .badge {
+      font-size: 0.72rem;
+      padding: 0.2rem 0.55rem;
+      border-radius: 4px;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    .badge-green { background: #1a3d2a; color: #4caf7a; }
+    .badge-yellow { background: #3a2f0a; color: #d4a017; }
+    .badge-red { background: #3d1a1a; color: #e07070; }
+    .badge-gray { background: #1e2130; color: #666; }
+
+    .alert {
+      border-radius: 6px;
+      padding: 0.85rem 1rem;
+      margin-bottom: 1.25rem;
+      font-size: 0.88rem;
+    }
+
+    .alert-error { background: #2d1515; border: 1px solid #5a2020; color: #e07070; }
+    .alert-info { background: #102030; border: 1px solid #1a4060; color: #6aabde; }
+    .alert-success { background: #102518; border: 1px solid #1a4a2a; color: #5dc97a; }
+
+    .finisher-list { counter-reset: finisher; }
+
+    .finisher-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid #1e2130;
+    }
+
+    .finisher-item:last-child { border-bottom: none; }
+
+    .finisher-pos {
+      font-size: 0.8rem;
+      color: #555;
+      width: 1.5rem;
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    .finisher-name { font-weight: 500; }
+    .finisher-guid { font-size: 0.78rem; color: #555; font-family: monospace; }
+
+    .known-drivers {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-top: 0.5rem;
+    }
+
+    .driver-chip {
+      font-size: 0.78rem;
+      background: #1e2130;
+      border: 1px solid #2a2d3a;
+      border-radius: 4px;
+      padding: 0.2rem 0.5rem;
+      color: #aaa;
+      cursor: pointer;
+      user-select: none;
+      transition: border-color 0.1s, color 0.1s;
+    }
+
+    .driver-chip:hover { border-color: #4a6fd9; color: #e0e0e0; }
+
+    .monospace { font-family: "SF Mono", "Consolas", monospace; font-size: 0.85rem; }
+
+    .warning-box {
+      background: #2a2010;
+      border: 1px solid #5a4010;
+      border-radius: 6px;
+      padding: 0.75rem 1rem;
+      font-size: 0.83rem;
+      color: #c8a040;
+      margin-bottom: 1rem;
+    }
+
+    .actions { display: flex; gap: 0.75rem; margin-top: 1.25rem; align-items: center; }
+
+    hr { border: none; border-top: 1px solid #2a2d3a; margin: 1.25rem 0; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>AMS2 Manual Result Importer</h1>
+      <p>Manually enter race results into the Server Manager championship database</p>
+    </header>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, msg in messages %}
+        <div class="alert alert-{{ 'error' if category == 'error' else 'info' }}">{{ msg }}</div>
+      {% endfor %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+  </div>
+
+  {% block scripts %}{% endblock %}
+</body>
+</html>

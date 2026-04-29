@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}Set Store Path — AMS2 Importer{% endblock %}
+
+{% block content %}
+<h2>Connect to Store</h2>
+
+<div class="card">
+  <form method="post" action="/">
+    <div class="field">
+      <label for="store_path">Path to store.json folder</label>
+      <input
+        type="text"
+        id="store_path"
+        name="store_path"
+        value="{{ store_path }}"
+        placeholder="/path/to/server-manager/store.json"
+        autofocus
+        spellcheck="false"
+      >
+      <p class="hint">
+        This should be the <code>store.json</code> directory (the folder with that name, not a file).
+        It must contain a <code>championships/</code> subdirectory.
+      </p>
+    </div>
+
+    <div class="actions">
+      <button type="submit" class="btn btn-primary">Load Championships &rarr;</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

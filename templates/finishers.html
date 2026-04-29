@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+
+{% block title %}Enter Finishers — AMS2 Importer{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="/">Store</a>
+  <span>/</span>
+  <a href="{{ url_for('select_championship') }}">Championships</a>
+  <span>/</span>
+  <a href="{{ url_for('select_event', champ_id=champ.ID) }}">{{ champ.Name }}</a>
+  <span>/</span>
+  Event &mdash; Enter Finishers
+</div>
+
+<h2>Enter Race Finishers</h2>
+
+{% if race_sessions | length > 1 %}
+  <div class="warning-box">
+    This event has {{ race_sessions | length }} race sessions. Make sure to select the correct one below.
+  </div>
+{% endif %}
+
+{% set has_existing = race_sessions | selectattr('Results') | list | length > 0 %}
+{% if has_existing %}
+  <div class="warning-box">
+    &#9888;&nbsp; This event already has a race result. Submitting will <strong>overwrite</strong> it (a backup will be made first).
+  </div>
+{% endif %}
+
+<form method="post" action="{{ url_for('submit') }}">
+  <input type="hidden" name="champ_id" value="{{ champ.ID }}">
+  <input type="hidden" name="event_id" value="{{ event.ID }}">
+
+  <div class="card">
+    <h2 style="margin-bottom:1.25rem; font-size:0.95rem; color:#aaa; font-weight:500; text-transform:uppercase; letter-spacing:0.05em;">Session &amp; Timing</h2>
+
+    {% if race_sessions | length > 1 %}
+      <div class="field">
+        <label for="session_index">Race Session</label>
+        <select name="session_index" id="session_index">
+          {% for s in race_sessions %}
+            <option value="{{ loop.index0 }}">
+              {{ s.Name }} (Index {{ s.Index }})
+              {% if s.Results %}&nbsp;— has result{% endif %}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+    {% else %}
+      <input type="hidden" name="session_index" value="0">
+    {% endif %}
+
+    <div class="field">
+      <label for="race_datetime">Race Date &amp; Time (UTC)</label>
+      <input
+        type="datetime-local"
+        id="race_datetime"
+        name="race_datetime"
+        value="{{ race_datetime_local }}"
+        required
+      >
+      <p class="hint">
+        This sets <code>Session.CompletedTime</code> and <code>Result.Date</code>.
+        Time is treated as UTC.
+      </p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2 style="margin-bottom:1.25rem; font-size:0.95rem; color:#aaa; font-weight:500; text-transform:uppercase; letter-spacing:0.05em;">Car &amp; Track</h2>
+
+    <div class="field-row">
+      <div class="field">
+        <label for="car_model_id">Car Model ID</label>
+        <input
+          type="text"
+          id="car_model_id"
+          name="car_model_id"
+          value="{{ car_model_id }}"
+          placeholder="-1404228714"
+          class="monospace"
+          spellcheck="false"
+        >
+        <p class="hint">Numeric string ID. Auto-filled from existing results.</p>
+      </div>
+      <div class="field">
+        <label for="car_model">Car Model Name</label>
+        <input
+          type="text"
+          id="car_model"
+          name="car_model"
+          value="{{ car_model }}"
+          placeholder="Sprint Race"
+          spellcheck="false"
+        >
+        <p class="hint">Display name. Auto-filled from existing results.</p>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="track_id">Track ID</label>
+      <input
+        type="text"
+        id="track_id"
+        name="track_id"
+        value="{{ track_id }}"
+        placeholder="-916478809"
+        class="monospace"
+        spellcheck="false"
+      >
+      <p class="hint">Numeric string. Auto-filled from existing results. Cosmetic only.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2 style="margin-bottom:0.5rem; font-size:0.95rem; color:#aaa; font-weight:500; text-transform:uppercase; letter-spacing:0.05em;">Finishing Order</h2>
+    <p class="hint" style="margin-bottom:1rem;">
+      Enter one driver per line, in finishing order (1st to last).
+      Optionally append a Steam64 GUID separated by a comma or tab.
+      GUIDs are looked up automatically from previous results when omitted.
+    </p>
+
+    {% if drivers %}
+      <div style="margin-bottom:0.75rem;">
+        <p class="hint" style="margin-bottom:0.35rem;">Known drivers &mdash; click to append to the list:</p>
+        <div class="known-drivers" id="known-drivers">
+          {% for driver in drivers %}
+            <span class="driver-chip" data-name="{{ driver }}">{{ driver }}</span>
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+
+    <div class="field" style="margin-bottom:0;">
+      <label for="finishers">Finishers (one per line)</label>
+      <textarea
+        id="finishers"
+        name="finishers"
+        placeholder="Chiefyk
+AnotherDriver,76561198012345678
+ThirdDriver"
+        spellcheck="false"
+        required
+      ></textarea>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button type="submit" class="btn btn-primary">Write Result &rarr;</button>
+    <a href="{{ url_for('select_event', champ_id=champ.ID) }}" class="btn btn-secondary">Cancel</a>
+  </div>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.querySelectorAll('.driver-chip').forEach(function(chip) {
+    chip.addEventListener('click', function() {
+      var textarea = document.getElementById('finishers');
+      var name = this.dataset.name;
+      var val = textarea.value;
+      if (val && !val.endsWith('\n')) val += '\n';
+      textarea.value = val + name;
+      textarea.focus();
+      textarea.scrollTop = textarea.scrollHeight;
+    });
+  });
+</script>
+{% endblock %}
